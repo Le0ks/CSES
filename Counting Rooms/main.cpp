@@ -1,61 +1,48 @@
 #include <iostream>
-#include <map>
-#include <set>
 #include <vector>
 
-std::map<std::pair<int, int>, std::set<std::pair<int, int>>> graph;
-std::vector<std::vector<bool>> used;
+int n, m;
 
-void dfs(std::pair<int, int> v) {
-    if (!used[v.first][v.second]) {
-        used[v.first][v.second] = true;
-        for (auto u : graph[v]) {
-            dfs(u);
-        }
-    }
-}
-
-int countConnectedComponents() {
-    int count = 0;
-    for (auto& v: graph) {
-        if (!used[v.first.first][v.first.second]) {
-            dfs(v.first);
-            count++;
-        }
-    }
-    return count;
+void dfs(int i, int j, std::vector<std::vector<bool>>& grid, std::vector<std::vector<bool>>& used) {
+  used[i][j] = true;
+  if (i > 0 && !used[i - 1][j] && grid[i - 1][j]) {
+    dfs(i - 1, j, grid, used);
+  }
+  if (j > 0 && !used[i][j - 1] && grid[i][j - 1]) {
+    dfs(i, j - 1, grid, used);
+  }
+  if (i < n - 1 && !used[i + 1][j] && grid[i + 1][j]) {
+    dfs(i + 1, j, grid, used);
+  }
+  if (j < m - 1 && !used[i][j + 1] && grid[i][j + 1]) {
+    dfs(i, j + 1, grid, used);
+  }
 }
 
 int main() {
-    int n, m; std::cin >> n >> m;
-    used.resize(n, std::vector<bool>(m, false));
-    char table[n][m];
-    std::pair<int, int> v, prev_v;
-    for (int i = 0; i != n; ++i) {
-        for (int j = 0; j != m; ++j) {
-            std::cin >> table[i][j];
-            if (table[i][j] == '.') {
-                v = {i, j};
-                graph[v] = {};
-                if (j != 0 && table[i][j - 1] == '.') {
-                    prev_v = {i, j - 1};
-                    graph[v].insert(prev_v);
-                    graph[prev_v].insert(v);
-                }
-            }
-        }
-    }
+  std::cin >> n >> m;
+  std::vector<std::vector<bool>> grid(n, std::vector<bool>(m));
+  char c;
+  for (int i = 0; i != n; ++i) {
     for (int j = 0; j != m; ++j) {
-        for (int i = 0; i != n; ++i) {
-            if (table[i][j] == '.') {
-                v = {i, j};
-                if (i != 0 && table[i - 1][j] == '.') {
-                    prev_v = {i - 1, j};
-                    graph[v].insert(prev_v);
-                    graph[prev_v].insert(v);
-                }
-            }
-        }
+      std::cin >> c;
+      if (c == '.') {
+        grid[i][j] = true;
+      } else {
+        grid[i][j] = false;
+      }
     }
-    std::cout << countConnectedComponents();
+  }
+  std::vector<std::vector<bool>> used(n, std::vector<bool>(m));
+  int ans = 0;
+  for (int i = 0; i != n; ++i) {
+    for (int j = 0; j != m; ++j) {
+      if (grid[i][j] && !used[i][j]) {
+        ++ans;
+        dfs(i, j, grid, used);
+      }
+    }
+  }
+  std::cout << ans << '\n';
+  return 0;
 }
